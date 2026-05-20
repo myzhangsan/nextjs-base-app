@@ -20,6 +20,7 @@
 
 - **Tailwind CSS**: 实用优先的 CSS 框架
 - **@tailwindcss/postcss**: Tailwind CSS 的 PostCSS 插件（Next.js 内置支持）
+- **shadcn/ui**: 基于 Radix UI 和 Tailwind CSS 的组件库
 
 ### 状态管理
 
@@ -27,7 +28,7 @@
 
 ### 图标库
 
-- **Lucide React**: 现代图标库
+- **Lucide React**: 现代图标库（shadcn/ui 默认使用）
 
 ### 开发工具
 
@@ -49,13 +50,21 @@ nextjs-base-app/
 │   │   │   └── layout.tsx     # 主应用布局
 │   │   ├── globals.css        # 全局样式
 │   │   └── layout.tsx         # 根布局
-│   └── shared/                # 共享模块
+│   └── shared/                # 共享模块（跨项目复用）
 │       ├── auth/
 │       │   └── session.ts     # 会话管理（Token 操作）
-│       └── router/
-│           ├── menus.ts       # 菜单配置
-│           └── routes.ts      # 路由常量定义
+│       ├── router/
+│       │   ├── menus.ts       # 菜单配置
+│       │   └── routes.ts      # 路由常量定义
+│       ├── components/        # 通用 UI 组件
+│       │   └── ui/            # shadcn/ui 组件
+│       │       ├── button.tsx     # 按钮组件
+│       │       ├── card.tsx       # 卡片组件
+│       │       └── input.tsx      # 输入框组件
+│       └── utils/
+│           └── cn.ts          # 通用工具函数（cn 类名合并）
 ├── public/                    # 静态资源目录
+├── components.json            # shadcn/ui 配置文件
 ├── package.json
 ├── tsconfig.json
 ├── next-env.d.ts
@@ -75,10 +84,58 @@ nextjs-base-app/
 
 - `auth/`: 认证相关功能（会话管理、Token 操作等）
 - `router/`: 路由管理相关功能（路由常量、菜单配置等）
+- `components/ui/`: 通用 UI 组件库（shadcn/ui 基础组件）
+- `utils/`: 通用工具函数（类名合并等）
 
 ## 核心功能模块
 
-### 1. 路由系统 (`src/shared/router/`)
+### 1. UI 组件库 (shadcn/ui)
+
+#### 组件使用方式
+
+shadcn/ui 组件位于 `src/shared/components/ui/` 目录，可以直接导入使用：
+
+```typescript
+import { Button } from "@/shared/components/ui/button";
+import { Card } from "@/shared/components/ui/card";
+import { Input } from "@/shared/components/ui/input";
+```
+
+#### 添加新组件
+
+使用 CLI 命令添加新组件：
+
+```bash
+# 添加单个组件
+pnpm dlx shadcn@latest add [component-name]
+
+# 示例
+pnpm dlx shadcn@latest add dialog
+pnpm dlx shadcn@latest add table
+pnpm dlx shadcn@latest add dropdown-menu
+```
+
+常用组件推荐：
+- `dialog`: 对话框/模态框
+- `table`: 数据表格
+- `dropdown-menu`: 下拉菜单
+- `select`: 选择器
+- `tabs`: 标签页
+- `form`: 表单组件（配合 react-hook-form）
+- `toast`: 消息提示
+
+#### 工具函数
+
+`src/shared/utils/cn.ts` 提供了 `cn()` 函数用于合并类名：
+
+```typescript
+import { cn } from "@/shared/utils/cn";
+
+// 使用示例
+<div className={cn("base-class", condition && "conditional-class", props.className)} />
+```
+
+### 2. 路由系统 (`src/shared/router/`)
 
 #### 路由常量定义 (`routes.ts`)
 
@@ -212,6 +269,95 @@ export const menus = [
 - [ ] 功能模块描述是否准确反映当前实现
 - [ ] 路由和菜单配置是否与代码同步
 - [ ] 版本号是否需要更新
+
+### 代码注释规范
+
+**重要**: 为了提高代码可读性和维护性，以下元素必须添加适当的注释：
+
+1. **公共 API 和导出函数**
+   - 所有导出的函数、类、接口都需要 JSDoc 注释
+   - 说明函数的用途、参数含义和返回值
+   - 示例：
+     ```typescript
+     /**
+      * 获取用户访问令牌
+      * @returns {string | null} 访问令牌字符串，未登录时返回 null
+      */
+     export function getToken(): string | null {
+       // 实现代码
+     }
+     ```
+
+2. **复杂业务逻辑**
+   - 对于复杂的算法、条件判断或业务流程，需要添加行内注释说明逻辑意图
+   - 解释为什么这样做，而不仅仅是做什么
+   - 避免显而易见的注释（如 `// 设置变量为 true`）
+
+3. **重要的类型定义和接口**
+   - 自定义类型、接口需要注释说明其用途
+   - 关键属性需要单独注释说明
+   - 示例：
+     ```typescript
+     /**
+      * 用户信息接口
+      */
+     interface UserInfo {
+       /** 用户唯一标识 */
+       id: string;
+       /** 用户显示名称 */
+       name: string;
+       /** 用户角色列表 */
+       roles: string[];
+     }
+     ```
+
+4. **配置常量和枚举**
+   - 路由常量、配置项需要注释说明其用途
+   - 枚举值需要说明每个值的含义
+   - 示例：
+     ```typescript
+     /**
+      * 应用路由常量
+      */
+     export const routes = {
+       /** 登录页面路径 */
+       login: "/login",
+       /** 仪表板页面路径 */
+       dashboard: "/dashboard",
+     } as const;
+     ```
+
+5. **组件 Props 接口**
+   - React 组件的 Props 接口需要完整注释
+   - 说明每个属性的作用、是否必填、默认值等
+   - 示例：
+     ```typescript
+     /**
+      * 按钮组件属性
+      */
+     interface ButtonProps {
+       /** 按钮显示文本 */
+       label: string;
+       /** 按钮类型，默认为 "primary" */
+       variant?: "primary" | "secondary" | "outline";
+       /** 点击事件处理函数 */
+       onClick?: () => void;
+     }
+     ```
+
+6. **特殊实现和临时方案**
+   - 使用 TODO、FIXME、HACK 等标记时需要详细说明原因
+   - 临时解决方案需要注明预计修复时间或替代方案
+   - 示例：
+     ```typescript
+     // TODO: 待优化 - 当前使用 localStorage，后续迁移到 HttpOnly Cookie
+     // FIXME: 在 SSR 环境下无法访问 localStorage，需要服务端兼容处理
+     ```
+
+**注释语言规范**：
+- 优先使用中文注释，便于团队理解
+- 技术术语可保留英文
+- 保持注释简洁明了，避免冗长
 
 ## 常用命令
 
