@@ -3,41 +3,44 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/shared/components/ui/card";
 import { Button } from "@/shared/components/ui/button";
 import { LayoutDashboard, Users, Settings, TrendingUp } from "lucide-react";
+import { useTranslations } from 'next-intl';
 
 const stats = [
   {
-    title: "总用户数",
+    title: "totalUsers",
     value: "1,234",
-    description: "较上月增长 +12%",
+    description: "growthRate",
     icon: Users,
   },
   {
-    title: "活跃用户",
+    title: "activeUsers",
     value: "892",
-    description: "当前在线",
+    description: "onlineNow",
     icon: TrendingUp,
   },
   {
-    title: "系统状态",
+    title: "systemStatus",
     value: "正常",
-    description: "运行时间 99.9%",
+    description: "uptime",
     icon: LayoutDashboard,
   },
   {
-    title: "待处理",
+    title: "pendingItems",
     value: "23",
-    description: "需要关注",
+    description: "needsAttention",
     icon: Settings,
   },
 ];
 
 export default function DashboardPage() {
+  const t = useTranslations('dashboard');
+  
   return (
     <div className="p-6 space-y-6">
       <div>
-        <h1 className="text-3xl font-bold">仪表板</h1>
+        <h1 className="text-3xl font-bold">{t('title')}</h1>
         <p className="text-muted-foreground mt-1">
-          欢迎回来，这是您的系统概览
+          {t('subtitle')}
         </p>
       </div>
 
@@ -48,14 +51,14 @@ export default function DashboardPage() {
             <Card key={index}>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">
-                  {stat.title}
+                  {t(stat.title as any)}
                 </CardTitle>
                 <Icon className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">{stat.value}</div>
                 <p className="text-xs text-muted-foreground">
-                  {stat.description}
+                  {t(stat.description as any)}
                 </p>
               </CardContent>
             </Card>
@@ -65,13 +68,13 @@ export default function DashboardPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle>快速操作</CardTitle>
-          <CardDescription>常用的系统管理功能</CardDescription>
+          <CardTitle>{t('quickActions')}</CardTitle>
+          <CardDescription>{t('quickActionsDesc')}</CardDescription>
         </CardHeader>
         <CardContent className="flex gap-4">
-          <Button>新建项目</Button>
-          <Button variant="outline">查看报告</Button>
-          <Button variant="secondary">系统设置</Button>
+          <Button>{t('newProject')}</Button>
+          <Button variant="outline">{t('viewReport')}</Button>
+          <Button variant="secondary">{t('systemSettings')}</Button>
         </CardContent>
       </Card>
     </div>

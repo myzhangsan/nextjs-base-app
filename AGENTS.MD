@@ -26,6 +26,10 @@
 
 - **Zustand**: 轻量级状态管理库
 
+### 国际化
+
+- **next-intl**: Next.js 国际化解决方案
+
 ### 图标库
 
 - **Lucide React**: 现代图标库（shadcn/ui 默认使用）
@@ -39,6 +43,9 @@
 
 ```
 nextjs-base-app/
+├── messages/                  # 国际化翻译文件
+│   ├── zh.json               # 中文翻译
+│   └── en.json               # 英文翻译
 ├── src/
 │   ├── app/                    # Next.js App Router 页面
 │   │   ├── (auth)/            # 认证相关路由组
@@ -53,17 +60,24 @@ nextjs-base-app/
 │   └── shared/                # 共享模块（跨项目复用）
 │       ├── auth/
 │       │   └── session.ts     # 会话管理（Token 操作）
+│       ├── i18n/
+│       │   ├── config.ts      # 国际化配置
+│       │   ├── request.ts     # next-intl 请求配置
+│       │   └── README.md      # 国际化使用指南
 │       ├── router/
 │       │   ├── menus.ts       # 菜单配置
 │       │   └── routes.ts      # 路由常量定义
 │       ├── components/        # 通用 UI 组件
-│       │   └── ui/            # shadcn/ui 组件
-│       │       ├── button.tsx     # 按钮组件
-│       │       ├── card.tsx       # 卡片组件
-│       │       └── input.tsx      # 输入框组件
+│       │   ├── ui/            # shadcn/ui 组件
+│       │   │   ├── button.tsx     # 按钮组件
+│       │   │   ├── card.tsx       # 卡片组件
+│       │   │   └── input.tsx      # 输入框组件
+│       │   └── language-switcher.tsx  # 语言切换器
 │       └── utils/
 │           └── cn.ts          # 通用工具函数（cn 类名合并）
 ├── public/                    # 静态资源目录
+├── next.config.ts             # Next.js 配置文件（含 next-intl 插件）
+├── middleware.ts              # 国际化中间件
 ├── components.json            # shadcn/ui 配置文件
 ├── package.json
 ├── tsconfig.json
@@ -83,8 +97,10 @@ nextjs-base-app/
 ### 当前包含的共享模块
 
 - `auth/`: 认证相关功能（会话管理、Token 操作等）
+- `i18n/`: 国际化相关功能（配置、使用指南等）
 - `router/`: 路由管理相关功能（路由常量、菜单配置等）
 - `components/ui/`: 通用 UI 组件库（shadcn/ui 基础组件）
+- `components/language-switcher.tsx`: 语言切换器组件
 - `utils/`: 通用工具函数（类名合并等）
 
 ## 核心功能模块
@@ -135,7 +151,90 @@ import { cn } from "@/shared/utils/cn";
 <div className={cn("base-class", condition && "conditional-class", props.className)} />
 ```
 
-### 2. 路由系统 (`src/shared/router/`)
+### 3. 国际化系统 (next-intl)
+
+项目使用 `next-intl` 实现多语言支持，当前支持中文 (zh) 和英文 (en)。
+
+#### 翻译文件
+
+翻译文件位于 `messages/` 目录：
+
+```typescript
+// messages/zh.json - 中文翻译
+{
+  "common": {
+    "appName": "Next.js 基础应用",
+    "login": "登录"
+  },
+  "auth": {
+    "loginTitle": "登录",
+    "emailLabel": "邮箱"
+  }
+}
+```
+
+#### 在组件中使用
+
+**客户端组件：**
+
+```typescript
+"use client";
+
+import { useTranslations } from 'next-intl';
+
+export function MyComponent() {
+  const t = useTranslations('auth');
+  
+  return (
+    <div>
+      <h1>{t('loginTitle')}</h1>
+      <label>{t('emailLabel')}</label>
+    </div>
+  );
+}
+```
+
+**服务端组件：**
+
+```typescript
+import { getTranslations } from 'next-intl/server';
+
+export default async function MyPage() {
+  const t = await getTranslations('dashboard');
+  
+  return (
+    <div>
+      <h1>{t('title')}</h1>
+    </div>
+  );
+}
+```
+
+#### 语言切换
+
+使用内置的 `LanguageSwitcher` 组件：
+
+```typescript
+import { LanguageSwitcher } from '@/shared/components/language-switcher';
+
+export function Header() {
+  return (
+    <header>
+      <LanguageSwitcher />
+    </header>
+  );
+}
+```
+
+#### 添加新语言
+
+1. 在 `src/shared/i18n/config.ts` 中添加新语言
+2. 创建对应的翻译文件（如 `messages/ja.json`）
+3. 更新 `middleware.ts` 中的 matcher
+
+详细使用说明请参考：`src/shared/i18n/README.md`
+
+### 4. 路由系统 (`src/shared/router/`)
 
 #### 路由常量定义 (`routes.ts`)
 
@@ -150,19 +249,25 @@ export const routes = {
 #### 菜单配置 (`menus.ts`)
 
 ```typescript
+import { routes } from "./routes";
+
+/**
+ * 菜单配置
+ * 注意：实际使用时应通过国际化翻译获取标题
+ */
 export const menus = [
   {
-    title: "首页",
+    title: "home",  // 使用翻译键，而非硬编码文本
     path: routes.dashboard,
   },
   {
-    title: "用户管理",
+    title: "users",
     path: routes.users,
   },
 ];
 ```
 
-### 2. 认证系统 (`src/shared/auth/session.ts`)
+### 5. 认证系统 (`src/shared/auth/session.ts`)
 
 基于 localStorage 的 Token 管理：
 
@@ -172,23 +277,33 @@ export const menus = [
 
 **注意**: 当前实现使用 localStorage，仅适用于客户端。服务端渲染时返回 null。
 
-### 3. 页面布局
+### 6. 页面布局
 
 #### 根布局 (`src/app/layout.tsx`)
 
 - 设置 HTML 语言为中文 (zh-CN)
 - 引入全局样式
 - 定义元数据（标题、描述）
+- 集成 NextIntlClientProvider 以支持国际化
 
 #### 主应用布局 (`src/app/(main)/layout.tsx`)
 
 - 用于包裹需要认证的主应用页面
-- 可扩展添加导航栏、侧边栏等组件
+- 包含顶部导航栏和语言切换器
+- 可扩展添加其他组件
 
 #### 路由分组
 
 - `(auth)`: 认证相关页面（登录、注册等）
 - `(main)`: 需要认证的主应用页面
+
+#### 国际化路由
+
+启用国际化后，URL 将包含语言前缀：
+- `/zh/login` - 中文登录页
+- `/en/login` - 英文登录页
+- `/zh/dashboard` - 中文仪表板
+- `/en/dashboard` - 英文仪表板
 
 ## 开发规范
 
