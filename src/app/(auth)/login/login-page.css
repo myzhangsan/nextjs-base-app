@@ -1,0 +1,53 @@
+/**
+ * 登录页面样式
+ */
+
+/* 浮动装饰元素容器 */
+.login-floating-decorations {
+  @apply absolute inset-0 pointer-events-none;
+  z-index: 2;
+}
+
+/* 左上角装饰 */
+.login-decoration--top-left {
+  position: absolute;
+  top: 5rem; /* 20px * 4 = 80px ≈ top-20 */
+  left: 5rem;
+  width: 8rem; /* 32px * 4 = 128px ≈ w-32 */
+  height: 8rem;
+  border-radius: 9999px; /* rounded-full */
+  filter: blur(2rem); /* blur-2xl */
+  opacity: 0.2;
+  background: radial-gradient(circle, rgba(59, 130, 246, 0.4) 0%, transparent 70%);
+  animation: float 8s ease-in-out infinite;
+}
+
+/* 右下角装饰 */
+.login-decoration--bottom-right {
+  position: absolute;
+  bottom: 5rem;
+  right: 5rem;
+  width: 10rem; /* 40px * 4 = 160px ≈ w-40 */
+  height: 10rem;
+  border-radius: 9999px;
+  filter: blur(2rem);
+  opacity: 0.2;
+  background: radial-gradient(circle, rgba(147, 51, 234, 0.4) 0%, transparent 70%);
+  animation: float 10s ease-in-out infinite;
+  animation-delay: 2s;
+}
+
+/* 右上角装饰 */
+.login-decoration--top-right {
+  position: absolute;
+  top: 10rem; /* 40px * 4 = 160px ≈ top-40 */
+  right: 10rem;
+  width: 6rem; /* 24px * 4 = 96px ≈ w-24 */
+  height: 6rem;
+  border-radius: 9999px;
+  filter: blur(1.5rem); /* blur-xl */
+  opacity: 0.15;
+  background: radial-gradient(circle, rgba(236, 72, 153, 0.4) 0%, transparent 70%);
+  animation: float 12s ease-in-out infinite;
+  animation-delay: 4s;
+}
